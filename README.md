@@ -51,7 +51,7 @@ You can move the cursor by character or word, jump to the beginning or end of th
 **Key Bindings:**
 
 | Key Combination          | Action                                               |
-| ------------------------ | --------------------------------------------------   |
+| ------------------------ | ---------------------------------------------------- |
 | `←` / `Ctrl+B`           | Move cursor one character to the left                |
 | `→` / `Ctrl+F`           | Move cursor one character to the right               |
 | `Ctrl+←` / `Alt+B`       | Move cursor one word to the left                     |
@@ -88,9 +88,9 @@ You can move the cursor by character or word, jump to the beginning or end of th
   Prints all history entries to `stdout`.
 
 * `xd_readline_history_save_to_file(const char *path, int append)`  
-  Saves the current history to a file.  
-  - If `append` is `1`, entries are added to the end of the file.  
-  - If `0`, the file is overwritten.
+  Saves the current history to a file.  
+  - If `append` is `1`, entries are added to the end of the file.  
+  - If `0`, the file is overwritten.
 
 * `xd_readline_history_load_from_file(const char *path)`  
   Loads history entries from a file into the current session.
@@ -132,6 +132,8 @@ The matched entry is highlighted and can be accepted, skipped, or canceled.
 | `Ctrl+G`        | Cancel the search and restore original input line                    |
 | `Esc Esc`       | Accept the current match and exit search mode                        |
 
+---
+
 ## 🪄 Tab Completion <a name="tab-completion"></a>
 
 `xd-readline` supports tab completion via a user-defined function.  
@@ -149,6 +151,7 @@ The completions generator function must match the following signature:
 ```c
 char **your_completions_generator(const char *line, int start, int end);
 ```
+
 Where:
 - `line` - The line being read.
 - `start` - The start index of the partial text to be completed within the line.  
@@ -164,8 +167,10 @@ The `start` position is determined by scanning backward from the cursor until a 
 
 You can customize this set of characters by modifying the macro in [xd_readline.h](./include/xd_readline.h).
 
-> ℹ️ **Note:** A working example of path completion is included in [main.c](./src/main.c).
+> ℹ️ **Note:** 
+> A working example of path completion is included in [main.c](./src/main.c).
 
+---
 
 ## 🎨 Prompt Customization<a name="prompt-customization"></a>
 
@@ -177,11 +182,11 @@ xd_readline_prompt = "your-prompt> ";
 
 The prompt supports ANSI SGR escape sequences for styling (such as color, bold, or underline). These sequences are automatically accounted for during rendering and will not interfere with input positioning or cursor movement.
 
-```C
+```c
 xd_readline_prompt = "\033[1;32myour-prompt>\033[0m ";
 ```
 
-> ℹ️ **Note**: 
+> ℹ️ **Note:** 
 > The prompt string is not duplicated internally, you should ensure it remains valid while `xd_readline()` is running.
 
 ---
@@ -197,13 +202,13 @@ A full working example is provided in [main.c](./src/main.c).
 
 ## 🧾 Notes<a name="notes"></a>
 
-* The library is designed to work only with **terminal I/O**, both `stdin` and `stdout` must be attached to a terminal.  
-If either is not a terminal, an error message is printed and the program will be terminated with an error exit code.
+* `xd-readline` is designed to work only with **terminal I/O**, both `stdin` and `stdout` must be attached to a terminal.  
+  If either is not a terminal, an error message is printed and the program will be terminated with an error exit code.
 
-- While large input lines are supported, some cursor movement and editing functionalities may not work correctly when the line exceeds the visible screen area (`width × height` characters).  
-This is due to the limitations of ANSI escape sequences and the goal of maintaining wide compatibility.  
+* While `xd-readline` supports large input lines, some cursor movement and editing functionalities may not work correctly when the line exceeds the visible screen area (`width × height` characters).  
+  This is due to the limitations of ANSI escape sequences and the goal of maintaining wide compatibility.  
 
-- The library was developed on **Debian Linux**, using the `xterm-256color` terminal type, and has been tested on different distributions and terminal emulators.
+* `xd-readline` was developed on **Debian Linux**, using the `xterm-256color` terminal type, and has been tested on different distributions and terminal emulators.
 
 ---
 
