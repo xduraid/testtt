@@ -1,29 +1,29 @@
 # ⌨️ XD-Readline
 
 Comprehensive, dependency-free command-line editor written in C.  
-Inspired by the GNU Readline library, but built from scratch. Ideal for building shells, interactive interpreters, and REPLs.
+Inspired by the GNU Readline library, but built from scratch. Ideal for use in shells and REPLs.
 
 ---
 
 ## ❔ Why XD-Readline?
 
-While building [xd-shell](https://github.com/xduraid/xd-shell), I needed readline features like interactive editing, command history, and tab-completion.  
-Instead of relying on an external library like GNU Readline, I wrote `xd-readline` from scratch to deepen my understanding of terminal I/O and low-level input processing on Unix-like systems.
+While building [xd-shell](https://github.com/xduraid/xd-shell), I needed features like interactive editing, command history, and tab-completion.  
+Instead of relying on an external library like GNU Readline, I wrote `xd-readline` from scratch to deepen my understanding of terminal I/O and low-level input handling on Unix-like systems.
 
 ---
 
 ## 🌟 Features
 
-* Raw-mode terminal I/O for low-level control.
-* Manual line wrapping and cursor tracking using ANSI escape sequences.
-* Terminal resize handling via `SIGWINCH` signal detection.
-* Full input editing with advanced cursor movement (character and word level).
-* Built-in history management: add, clear, retrieve, save, and load from file.
+* Raw-mode terminal I/O.
+* Manual line wrapping and cursor tracking using basic ANSI escape sequences.
+* Terminal resize handling via a `SIGWINCH` signal handler.
+* Full input editing and advanced cursor movement.
+* Built-in functions for history management.
 * Interactive history navigation.
-* Forward and reverse history search with match highlighting.
+* Forward and backward history search.
 * Customizable tab-completion via user-defined generator function.
-* Lists all possible completions when pressing `Tab` twice.
-* Configurable input prompt with support for ANSI SGR color codes.
+* Displaying possible completions when multiple exist.
+* Customizable input prompt with support for ANSI SGR codes.
 
 ---
 
@@ -46,7 +46,7 @@ Instead of relying on an external library like GNU Readline, I wrote `xd-readlin
 ## 🖋️ Line Editing and Cursor Movement <a name="line-editing"></a>
 
 `xd-readline` supports full editing of the input line at any cursor position.
-You can move the cursor by character or word, jump to the beginning or end of the line, and delete characters or entire words efficiently.
+You can move the cursor by character or word, jump to the beginning or end of the line, and delete characters or words efficiently.
 
 **Key Bindings:**
 
@@ -62,10 +62,11 @@ You can move the cursor by character or word, jump to the beginning or end of th
 | `Delete`                 | Delete character at the cursor                       |
 | `Ctrl+D`                 | Delete character at the cursor, or send EOF if empty |
 | `Alt+Backspace`          | Delete word before the cursor                        |
-| `Ctrl+Delete` / `Alt+D`  | Delete word after the cursor                         |
+| `Alt+D` / `Ctrl+Delete`  | Delete word after the cursor                         |
 | `Ctrl+U`                 | Delete everything before the cursor                  |
 | `Ctrl+K`                 | Delete everything from the cursor to the end         |
 | `Ctrl+L`                 | Clear the screen                                     |
+| `Enter` / `Ctrl+J`       | Submit the current input line                        |
 
 ---
 
