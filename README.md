@@ -4,9 +4,9 @@ Comprehensive, dependency-free command-line editor written in C.
 Inspired by the GNU Readline library, but built from scratch. Ideal for use in shells and REPLs.
 
 
-<p align="center">
-<img src="./img.png" alt="drawing" width="600"/>
-</p>
+
+<img src="./img.png" alt="drawing" />
+
 
 
 ---
