@@ -3,6 +3,12 @@
 Comprehensive, dependency-free command-line editor written in C.  
 Inspired by the GNU Readline library, but built from scratch. Ideal for use in shells and REPLs.
 
+
+<p align="center">
+<img src="./img.png" alt="drawing" width="600"/>
+</p>
+
+
 ---
 
 ## ❔ Why XD-Readline?
@@ -68,13 +74,13 @@ You can move the cursor by character or word, jump to the beginning or end of th
 | `Ctrl+L`                 | Clear the screen                                     |
 | `Enter` / `Ctrl+J`       | Submit the current input line                        |
 
-> ℹ️ **Note:** a word is composed of letters and digits.
+> ℹ️ **Note:** A word is composed of letters and digits.
 
 ---
 
 ## 💾 History Management <a name="history-management"></a>
 
-`xd-readline` provides utility functions to store, browse, and manage previously entered lines:  
+`xd-readline` provides utility functions to manage input history:  
 
 * `xd_readline_history_add(const char *str)`  
   Adds a new entry to the history array.
@@ -98,15 +104,13 @@ You can move the cursor by character or word, jump to the beginning or end of th
 * `xd_readline_history_load_from_file(const char *path)`  
   Loads history entries from a file into the current session.
 
-> ℹ️ **Note:**  
-> History entries are stored in a circular array with a fixed maximum capacity defined by the `XD_RL_HISTORY_MAX` macro. By default, this limit is set to `1000`, and you can increase it by changing the macro's value in [xd_readline.h](./include/xd_readline.h).
+> ℹ️ **Note:** History entries are stored in a circular array with a fixed maximum capacity defined by the `XD_RL_HISTORY_MAX` macro. By default, this limit is set to `1000`, and you can increase it by changing the macro's value in [xd_readline.h](./include/xd_readline.h).
 
 ---
 
 ## 🧭 History Navigation <a name="history-navigation"></a>
 
-`xd-readline` supports navigating through previously entered lines using keyboard shortcuts.  
-You can move backward and forward through the history, or jump directly to the oldest or most recent entry.
+`xd-readline` supports navigating through history using keyboard shortcuts.  
 
 **Key Bindings:**
 
@@ -117,8 +121,7 @@ You can move backward and forward through the history, or jump directly to the o
 | `Ctrl+↑` / `Ctrl+Page Up`   | Jump to the first (oldest) history entry     |
 | `Ctrl+↓` / `Ctrl+Page Down` | Jump to the last (most recent) history entry |
 
-> ℹ️ **Note:**  
-> While navigating through history, any edits made to a line are saved to history before moving to another entry.
+> ℹ️ **Note:** While navigating through history, edits to the current line are saved before moving to another entry.
 
 ---
 
@@ -141,17 +144,13 @@ The matching entry is highlighted and can be accepted, skipped, or canceled.
 
 ## 🪄 Tab Completion <a name="tab-completion"></a>
 
-`xd-readline` supports tab-completion using a user-defined completions generator function.  
+`xd-readline` supports tab-completion through a user-defined completions generator function.  
 When the user presses `Tab`, this function is called to generate an array of possible completions for the text being typed.  
 * If the array contains a single entry, the input is completed using that entry.  
 * If it contains multiple entries, the input is completed to their longest common prefix.  
 * Pressing `Tab` again displays all available completions.
 
-To enable tab-completion, you must assign your completions generator function to the global completions generator function pointer:
-
-```c
-xd_readline_completions_generator = your_completions_generator;
-```
+To enable tab-completion, you must define your completions generator function and assign it to the global completions generator function pointer `xd_readline_completions_generator`.
 
 The completions generator function must match the following signature:  
 
@@ -164,7 +163,7 @@ Where:
 - `start` - The start index of the partial text to be completed within the line.  
 - `end` - The end index (exclusive) of the partial text to be completed within the line.  
 
-The generator must return a **dynamically allocated**, **NULL-terminated**, and **sorted** array of possible completions. `xd-readline` will automatically free the array and each string after use.
+This function must return a **dynamically allocated**, **NULL-terminated**, and **sorted** array of possible completions. `xd-readline` will automatically free the array and each string after use.
 
 The `start` position is determined by scanning backward from the cursor until a delimiter character is found. These delimiters are defined by the `XD_RL_TAB_COMP_DELIMITERS` macro:
 
@@ -174,8 +173,7 @@ The `start` position is determined by scanning backward from the cursor until a 
 
 You can customize this set of characters by modifying the macro in [xd_readline.h](./include/xd_readline.h).
 
-> ℹ️ **Note:**  
-> A working completions generator function for path completion is included in [main.c](./src/main.c).
+> ℹ️ **Note:** A working completions generator function for path completion is included in [main.c](./src/main.c).
 
 ---
 
@@ -190,16 +188,15 @@ Here is an example of a green prompt using ANSI escape codes:
 xd_readline_prompt = "\033[1;32myour-prompt>\033[0m ";
 ```
 
-> ℹ️ **Note:**  
-> The prompt string is not duplicated internally, so it must remain valid in memory while `xd_readline()` is running.
+> ℹ️ **Note:** The prompt string is not duplicated internally, so it must remain valid in memory while `xd_readline()` is running.
 
 ---
 
 ## 🚀 Integration <a name="integration"></a>
 
-This library has no dependencies,  just copy `xd_readline.c` and `xd_readline.h` into your project, then include the where needed, and you're good to go.
+This library has no dependencies,  just copy `xd_readline.c` and `xd_readline.h` into your project, then include the header where needed, and you're good to go.
 
-A full working example is provided in [main.c](./src/main.c).
+A full working example utilizing all `xd-readline` features is provided in [main.c](./src/main.c).
 
 ---
 
@@ -208,9 +205,9 @@ A full working example is provided in [main.c](./src/main.c).
 * `xd-readline` is designed to work only with **terminal I/O**, both `stdin` and `stdout` must be attached to a terminal. If either is not a terminal, an error message is printed and the program will be terminated with an error exit code.
 
 * While large input lines are supported, some editing and cursor movement operations may behave incorrectly when the line exceeds the visible screen area (`width × height` characters).  
-  This is a limitation of basic ANSI escape sequences and is intentional to preserve broad compatibility across terminal types.
+  This is a limitation of basic ANSI escape sequences and is intentional to preserve broad compatibility across terminal emulators.
 
-* `xd-readline` was developed on **Debian Linux**, using an `xterm-256color` terminal, and has been tested on different distributions and terminal emulators.
+* `xd-readline` was developed on **Debian Linux**, using an `xterm-256color` terminal, and has been tested on various terminal emulators.
 
 ---
 
