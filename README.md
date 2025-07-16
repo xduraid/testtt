@@ -5,7 +5,7 @@ Inspired by the GNU Readline library, but built from scratch. Ideal for use in s
 
 
 
-<img src="./img.png" alt="drawing" />
+<img src="./img1.png" alt="drawing" />
 
 
 
