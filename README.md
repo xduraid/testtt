@@ -3,7 +3,7 @@
 ## Table of Contents
 
 2. [💻 Interactive Shell Mode](#interactive-shell-mode)  
-   1. [⏱️ Prompt Format](#prompt-format)  
+   2.1. [⏱️ Prompt Format](#prompt-format)  
    2. [✏️ Readline Features](#readline-features)  
       1. [Line Editing and Cursor Movement](#line-editing-and-cursor-movement)  
       2. [History Navigation](#history-navigation)  
