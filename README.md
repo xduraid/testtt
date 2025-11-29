@@ -17,5 +17,5 @@
    2.1. [⏱️ Prompt Format](#prompt-format)  
    2.2. [✏️ Readline Features](#readline-features)  
       <ul style="list-style-type:none">
-         <li> 2.2.1. [Line Editing and Cursor Movement] </li>
+         * <li> 2.2.1. [Line Editing and Cursor Movement] </li>
       </ul>
