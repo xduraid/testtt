@@ -12,10 +12,3 @@
    2.4. [🔁 Tab Completion](#tab-completion)  
       * 2.4.1. [Completion Types](#completion-types)  
       * 2.4.2. [Completion Behavior](#completion-behavior)  
-
-2. [💻 Interactive Shell Mode](#interactive-shell-mode)  
-   2.1. [⏱️ Prompt Format](#prompt-format)  
-   2.2. [✏️ Readline Features](#readline-features)  
-      <ul style="list-style-type:none">
-         * <li> 2.2.1. [Line Editing and Cursor Movement] </li>
-      </ul>
