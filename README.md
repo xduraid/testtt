@@ -1,4 +1,4 @@
-- 2. [💻 Interactive Shell Mode](#interactive-shell-mode)  
+- 1. [💻 Interactive Shell Mode](#interactive-shell-mode)  
    - 2.1. [⏱️ Prompt Format](#prompt-format)  
    - 2.2. [✏️ Readline Features](#readline-features)  
       - 2.2.1. [Line Editing and Cursor Movement](#line-editing-and-cursor-movement)  
