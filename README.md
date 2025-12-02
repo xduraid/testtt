@@ -1,14 +1,12 @@
 - [4. Variables and Environment](#variables-and-environment)
-    - [4.1. Shell Variables](#shell-variables)
+    - [4.1. Variables](#variables)
         - [4.1.1. Variable Naming](#variable-naming)
         - [4.1.2. The `set` Builtin](#the-set-builtin)
         - [4.1.3. The `unset` Builtin](#the-unset-builtin)
     - [4.2. Environment Variables](#environment-variables)
         - [4.2.1. The `export` Builtin](#the-export-builtin)
         - [4.2.2. The `unexport` Builtin](#the-unexport-builtin)
-
----
-
+     
 ---
 
 ## 4. Variables and Environment <a name="variables-and-environment"></a>
@@ -20,7 +18,7 @@ child processes.
 
 ---
 
-### 4.1 Shell Variables <a name="shell-variables"></a>
+### 4.1 Variables <a name="variables"></a>
 
 Shell variables are name-value pairs stored in the internal variables hash table.
 
