@@ -12,7 +12,7 @@
 ## 4. Variables and Environment <a name="variables-and-environment"></a>
 
 `xd-shell` maintains an internal hash table for storing shell variables and
-environment variables. Both types share the same underlying table, with each
+environment variables. Both types share the same hash table, with each
 variable carrying an exported flag that determines whether it is passed to 
 child processes.
 
@@ -20,15 +20,17 @@ child processes.
 
 ### 4.1 Shell Variables <a name="shell-variables"></a>
 
-Shell variables are name-value pairs stored in the shell's internal variable hash 
-table.
+Shell variables are name-value pairs stored in the internal variables hash table.
 
 ---
 
 #### 4.1.1 Variable Naming <a name="variable-naming"></a>
 
 Shell variable names may consist of letters, digits, and underscores, but must
-not begin with a digit. Variable names are case-sensitive.
+not begin with a digit. 
+
+> ℹ️ **Note:**
+> Variable names are case-sensitive.
 
 ---
 
@@ -38,7 +40,7 @@ The `set` builtin is used to assign values to variables or display existing ones
 
 **Usage:**
 
-```bash
+```sh
 set [name[=value] ...]
 ```
 
@@ -52,7 +54,7 @@ set [name[=value] ...]
 
 - **Without arguments:**  
   Prints all defined variables in the following reusable form:  
-  ```bash
+  ```sh
   set name1='value1'
   set name2='value2'
   ...
@@ -61,12 +63,12 @@ set [name[=value] ...]
 
 - **With arguments:**  
   Each argument may be one of the following:
-  - `name` — prints the value of the variable `name`.
+  - `name` — prints the variable `name` in the reusable form.
   - `name=value` — sets the variable `name` to `value`, preserving its exported status.
 
 **Exit status:**
 
-Returns `0` unless an invalid option is given or error occurs.
+Returns `0` unless invalid option is given or error occurs.
 
 ---
 
@@ -76,7 +78,7 @@ The `unset` builtin is used to unset variables.
 
 **Usage:**
 
-```bash
+```sh
 unset name [name ...]
 ```
 
@@ -92,14 +94,14 @@ For each argument `name`, it unsets the variable `name`.
 
 **Exit status:**
 
-Returns `0` unless an invalid option is given or error occurs.
+Returns `0` unless invalid option is given or error occurs.
 
 ---
 
 ### 4.2 Environment Variables <a name="environment-variables"></a>
 
 Environment variables are stored in the same internal hash table as shell
-variables, but have an exported flag.   
+variables, but have the exported flag set.   
 Exported variables are included in the environment of commands executed by the shell.
 
 ---
@@ -111,7 +113,7 @@ the environment of executed commands.
 
 **Usage:**
 
-```bash
+```sh
 export [-p] [name[=value] ...]
 ```
 
@@ -127,7 +129,7 @@ export [-p] [name[=value] ...]
 - **Without arguments or with `-p`:**  
   Prints all exported variables in the following reusable form:  
   
-  ```bash
+  ```sh
   export name1='value1'
   export name2='value2'
   ...
@@ -141,7 +143,7 @@ export [-p] [name[=value] ...]
 
 **Exit status:**
 
-Returns `0` unless an invalid option is given or error occurs.
+Returns `0` unless invalid option is given or error occurs.
 
 ---
 
@@ -151,7 +153,7 @@ The `unexport` builtin is used to mark variables as not exported so they are no 
 
 **Usage:**
 
-```bash
+```sh
 unexport name [name ...]
 ```
 
@@ -168,6 +170,6 @@ For each argument `name`, it clears the exported flag of the variable `name`.
 
 **Exit status:**
 
-Returns `0` unless an invalid option is given or error occurs.
+Returns `0` unless invalid option is given or error occurs.
 
 ---
