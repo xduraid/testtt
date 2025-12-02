@@ -1,4 +1,3 @@
----
 
 ## 4. Variables and Environment <a name="variables-and-environment"></a>
 
