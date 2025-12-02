@@ -9,6 +9,8 @@
 
 ---
 
+---
+
 ## 4. Variables and Environment <a name="variables-and-environment"></a>
 
 `xd-shell` maintains an internal hash table for storing shell variables and
@@ -29,8 +31,7 @@ Shell variables are name-value pairs stored in the internal variables hash table
 Shell variable names may consist of letters, digits, and underscores, but must
 not begin with a digit. 
 
-> ℹ️ **Note:**
-> Variable names are case-sensitive.
+> ℹ️ **Note:** variable names are case-sensitive.
 
 ---
 
