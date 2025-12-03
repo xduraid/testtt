@@ -358,26 +358,27 @@ expansion replaces it with its value.
 
 ### 6.3 Command Substitution <a name="command-substitution"></a>
 
-Command substitution allows the output of a command to replace the substitution
+Command substitution allows the output of a command to replace the command
 itself. It occurs when a command is enclosed as `$(command)`.
 
 `xd-shell` performs command substitution by executing `command` in a subshell and
 replacing the entire `$(...)` construct with the standard output of `command`, with
 any trailing newline characters removed.
 
-The text inside `$(...)` is parsed as a normal `xd-shell` command list. It may
+The text inside `$(...)` is parsed as a normal `xd-shell` command list, it may
 contain pipelines, redirections, and nested substitutions.
 
 Only the command's `stdout` is captured, `stderr` is left unchanged.
 
-Because the command runs in a subshell, any side effects (such as variable
-assignments or changing the working directory) do not affect the parent shell.
+> ℹ️ **Note:** Because the command in command substitution runs in a subshell, any 
+side effects such as variable assignments or changing the working directory do not 
+affect the parent shell.
 
 ---
 
 ### 6.4 Word Splitting <a name="word-splitting"></a>
 
-Word splitting is applied to the result of parameter expansion and command 
+`xd-shell` applies word splitting to the result of parameter expansion and command 
 substitution when they occur outside of double quotes. The expanded text is split
 into separate words based on the whitespace characters: space (` `), tab (`\t`),
 and newline (`\n`). Consecutive whitespace characters act as a single separator.
@@ -387,37 +388,36 @@ and newline (`\n`). Consecutive whitespace characters act as a single separator.
 ### 6.5 Filename Expansion <a name="filename-expansion"></a>
 
 After word splitting, `xd-shell` performs filename expansion on words that
-contain unquoted wildcard characters or brace patterns. Filename expansion
-replaces such patterns with the list of matching pathnames.
+contain unquoted wildcard characters, bracket expressions, or brace patterns.
+Filename expansion replaces these constructs with the list of files or
+directories whose names match the pattern.
 
-The following forms are supported:
+`xd-shell` supports the following constructs in filename expansion:
 
-| Syntax      | Description                                                |
-|-------------|------------------------------------------------------------|
-| `*`         | Matches any sequence of characters                         |
-| `?`         | Matches any single character                               |
-| `[abc]`     | Matches one character in the class                         |
-| `[a-z]`     | Matches one character in the range                         |
-| `[!abc]`    | Matches one character not in the class                     |
-| `[!a-z]`    | Matches one character not in the range                     |
-| `{a,b,c}`   | Brace expansion: expands to each alternative inside braces |
+| Syntax      | Description                                                                  |
+|-------------|------------------------------------------------------------------------------|
+| `*`         | Matches any sequence of characters                                           |
+| `?`         | Matches exactly one character                                                |
+| `[abc]`     | Matches a single character from those listed inside the brackets             |
+| `[a-z]`     | Matches a single character from the specified character range                |
+| `[!abc]`    | Matches a single character not listed inside the brackets                    |
+| `[!a-z]`    | Matches a single character outside the specified character range             |
+| `{a,b,c}`   | Brace expansion: expands into each alternative before matching occurs        |
 
-Filename expansion applies to each path component separately. A `/` cannot be
-matched by `*`, `?`, or bracket expressions. Files beginning with `.` are only
-matched when the pattern explicitly starts with a `.`.
 
-If a pattern produces no matches, it is left unchanged.
+Filename expansion is applied to each path component separately. The `/` charater cannot be matched by `*`, `?`, or bracket expressions. Additionally, files beginning with `.` are only matched when the pattern explicitly starts with a `.`.
 
-> ℹ️ **Note:** brace expansion (`{a,b,c}`) is supported only during filename expansion.  
+If a pattern does not match any files or directories, no expansion is performed
+and the word is left unchanged.
 
 ---
 
 ### 6.6 Quote Removal <a name="quote-removal"></a>
 
-After all previous expansions, `xd-shell` removes all unquoted `\`, `'`, and `"` 
-characters that did not result from one of the expansions.  
-Backslashes are removed only when they are escaping another character (outside 
-single quotes, and inside double quotes only for `$`, `"`, `\`, and `newline`).
+After all previous expansions, `xd-shell` removes all unquoted `\`, `'`, and `"`
+characters that did not result from an expansion.  
+A backslash is removed outside quotes, and inside double quotes when it appears before `$`, `"`, `\`, 
+or `\n`.
 
 ---
 
