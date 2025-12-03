@@ -23,6 +23,15 @@
 
 ---
 
+## 4. Variables and Environment <a name="variables-and-environment"></a>
+
+`xd-shell` maintains an internal hash table for storing shell variables and
+environment variables. Both types share the same hash table, with each
+variable carrying an exported flag that determines whether it is passed to 
+child processes.
+
+---
+
 ### 4.1 Variables <a name="variables"></a>
 
 Shell variables are name-value pairs stored in the internal variables hash table.
@@ -291,22 +300,22 @@ These expansions are done in the following order:
 
 Tilde expansion occurs when a word begins with `~` and is not quoted.  
 
-`xd-shell` supports the standard forms:
+`xd-shell` supports the following forms of tilde expansion:
 
 - `~` and `~/path`  
-  Expands to the current user's home directory.  
+  Expands `~` to the current user's home directory.  
   Uses `$HOME` if set, otherwise falls back to the passwd database.
 
 - `~user` and `~user/path`  
-  Expands to the home directory of `user`.  
+  Expands `~user` to the home directory of `user`.  
   If `user` does not exist, no expansion occurs.
 
 - `~+` and `~+/path`  
-  Expands to the current working directory (`$PWD`).  
+  Expands `~+` to the current working directory (`$PWD`).  
   If `PWD` is unset, no expansion occurs.
 
 - `~-` and `~-/path`  
-  Expands to the previous working directory (`$OLDPWD`).  
+  Expands `~-` to the previous working directory (`$OLDPWD`).  
   If `OLDPWD` is unset, no expansion occurs.
 
 ---
