@@ -36,9 +36,6 @@ child processes.
 
 Shell variables are name-value pairs stored in the internal variables hash table.
 
-> ℹ️ **Note:** Special shell parameters such as `$?`, `$$`, and `$!` are not
-> regular variables and cannot be set or exported. They are read-only and only available through parameter expansion. See [Special Parameters](#special-parameters).
-
 ---
 
 #### 4.1.1 Variable Naming <a name="variable-naming"></a>
@@ -299,7 +296,6 @@ These expansions are done in the following order:
 ### 6.1 Tilde Expansion <a name="tilde-expansion"></a>
 
 Tilde expansion occurs when a word begins with `~` and is not quoted.  
-
 `xd-shell` supports the following forms of tilde expansion:
 
 - `~` and `~/path`  
@@ -330,29 +326,33 @@ double-quoted text and is followed by a valid variable name, a supported special
 parameter, or `{`. Otherwise, it does not start parameter expansion and the `$`
 character is preserved.
 
+`xd-shell` supports the following forms of parameter expansion:
+
+- `$NAME`
+- `${NAME}` — preferred to prevent characters immediately following the variable name from being interpreted as part of it.
+
+`NAME` may refer to a shell variable, an environment variable, or a special parameter.
+
 ---
 
 #### 6.2.1 Variable Expansion <a name="variable-expansion"></a>
 
-The following forms expand shell variables or environment variables:
-
-- `$VAR`
-- `${VAR}` — preferred when characters immediately following the variable name
-  would otherwise be interpreted as part of it
-
-If a variable is not set, it expands to an empty string.
+When `NAME` in `$NAME` or `${NAME}` refers to a variable, parameter expansion
+replaces it with its value. If the variable is not defined, it is replaced with
+an empty string.
 
 ---
 
 #### 6.2.2 Special Parameters <a name="special-parameters"></a>
 
-The following special parameters are supported:
+When `NAME` in `$NAME` or `${NAME}` refers to a special parameter, parameter
+expansion replaces it with its value.
 
-- `$?` — exit status of the last command  
-- `$$` — PID of the current shell  
-- `$!` — PID of the most recent background job  
+`xd-shell` supports the following special parameters:
 
-Braced forms such as `${?}` are also supported.
+- `?` — stores the exit status of the last command
+- `$` — stores the PID of the current shell
+- `!` — stores the PID of the most recent background job
 
 ---
 
