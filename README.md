@@ -21,20 +21,14 @@
     - [6.5. Filename Expansion](#filename-expansion)
     - [6.6. Quote Removal](#quote-removal)
 
- ---
-
-## 4. Variables and Environment <a name="variables-and-environment"></a>
-
-`xd-shell` maintains an internal hash table for storing shell variables and
-environment variables. Both types share the same hash table, with each
-variable carrying an exported flag that determines whether it is passed to 
-child processes.
-
 ---
 
 ### 4.1 Variables <a name="variables"></a>
 
 Shell variables are name-value pairs stored in the internal variables hash table.
+
+> ℹ️ **Note:** Special shell parameters such as `$?`, `$$`, and `$!` are not
+> regular variables and cannot be set or exported. They are read-only and only available through parameter expansion. See [Special Parameters](#special-parameters).
 
 ---
 
