@@ -303,8 +303,8 @@ Tilde expansion occurs when a word begins with `~` and is not quoted.
   Uses `$HOME` if set, otherwise falls back to the passwd database.
 
 - `~user` and `~user/path`  
-  Expands `~user` to the home directory of `user`.  
-  If `user` does not exist, no expansion occurs.
+  Expands `~user` to the home directory of the user `user`.  
+  If the user `user` does not exist, no expansion occurs.
 
 - `~+` and `~+/path`  
   Expands `~+` to the current working directory (`$PWD`).  
@@ -350,9 +350,9 @@ expansion replaces it with its value.
 
 `xd-shell` supports the following special parameters:
 
-- `?` — stores the exit status of the last command
-- `$` — stores the PID of the current shell
-- `!` — stores the PID of the most recent background job
+- `?` — the exit status of the last command
+- `$` — the PID of the current shell
+- `!` — the PID of the most recent background job
 
 ---
 
@@ -420,3 +420,4 @@ Backslashes are removed only when they are escaping another character (outside
 single quotes, and inside double quotes only for `$`, `"`, `\`, and `newline`).
 
 ---
+
