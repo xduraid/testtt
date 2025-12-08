@@ -1,29 +1,38 @@
-- [4. Variables and Environment](#variables-and-environment)
-    - [4.1. Variables](#variables)
-        - [4.1.1. Variable Naming](#variable-naming)
-        - [4.1.2. The `set` Builtin](#the-set-builtin)
-        - [4.1.3. The `unset` Builtin](#the-unset-builtin)
-    - [4.2. Environment Variables](#environment-variables)
-        - [4.2.1. The `export` Builtin](#the-export-builtin)
-        - [4.2.2. The `unexport` Builtin](#the-unexport-builtin)
-- [5. Aliases](#aliases)
-    - [5.1. Alias Naming](#alias-naming)
-    - [5.2. Alias Expansion](#alias-expansion)
-    - [5.3. The `alias` Builtin](#the-alias-builtin)
-    - [5.4. The `unalias` Builtin](#the-unalias-builtin)
-- [6. Shell Expansions](#shell-expansions)
-    - [6.1. Tilde Expansion](#tilde-expansion)
-    - [6.2. Parameter Expansion](#parameter-expansion)
-        - [6.2.1. Variable Expansion](#variable-expansion)
-        - [6.2.2. Special Parameters](#special-parameters)
-    - [6.3. Command Substitution](#command-substitution)
-    - [6.4. Word Splitting](#word-splitting)
-    - [6.5. Filename Expansion](#filename-expansion)
-    - [6.6. Quote Removal](#quote-removal)
+- [4 Variables and Environment](#variables-and-environment)
+    - [4.1 Variables](#variables)
+        - [4.1.1 Variable Naming](#variable-naming)
+        - [4.1.2 The `set` Builtin](#the-set-builtin)
+        - [4.1.3 The `unset` Builtin](#the-unset-builtin)
+    - [4.2 Environment Variables](#environment-variables)
+        - [4.2.1 The `export` Builtin](#the-export-builtin)
+        - [4.2.2 The `unexport` Builtin](#the-unexport-builtin)
+- [5 Aliases](#aliases)
+    - [5.1 Alias Naming](#alias-naming)
+    - [5.2 Alias Expansion](#alias-expansion)
+    - [5.3 The `alias` Builtin](#the-alias-builtin)
+    - [5.4 The `unalias` Builtin](#the-unalias-builtin)
+- [6 Shell Expansions](#shell-expansions)
+    - [6.1 Tilde Expansion](#tilde-expansion)
+    - [6.2 Parameter Expansion](#parameter-expansion)
+        - [6.2.1 Variable Expansion](#variable-expansion)
+        - [6.2.2 Special Parameters](#special-parameters)
+    - [6.3 Command Substitution](#command-substitution)
+    - [6.4 Word Splitting](#word-splitting)
+    - [6.5 Filename Expansion](#filename-expansion)
+    - [6.6 Quote Removal](#quote-removal)
+- [7 Job Control](#job-control)
+    - [7.1 Foreground and Background Jobs](#foreground-and-background-jobs)
+    - [7.2 Job States](#job-states)
+    - [7.3 Terminal Control](#terminal-control)
+    - [7.4 Signal Handling](#signal-handling)
+    - [7.5 Job Specifiers](#job-specifiers)
+    - [7.6 The `jobs` Builtin](#the-jobs-builtin)
+    - [7.8 The `bg` Builtin](#the-bg-builtin)
+    - [7.9 The `kill` Builtin](#the-kill-builtin)
 
 ---
 
-## 4. Variables and Environment <a name="variables-and-environment"></a>
+## 4 Variables and Environment <a name="variables-and-environment"></a>
 
 `xd-shell` maintains an internal hash table for storing shell variables and
 environment variables. Both types share the same hash table, with each
@@ -187,7 +196,7 @@ Returns `0` unless an invalid option is given or an error occurs.
 
 ---
 
-## 5. Aliases <a name="aliases"></a>
+## 5 Aliases <a name="aliases"></a>
 
 Aliases are used to substitute a command name with a string before the command is
 parsed.  
@@ -278,7 +287,7 @@ Returns `0` unless an invalid option is given or an error occurs.
 
 ---
 
-## 6. Shell Expansions <a name="shell-expansions"></a>
+## 6 Shell Expansions <a name="shell-expansions"></a>
 
 Before executing a command, `xd-shell` applies a series of expansions to each
 word.  
@@ -421,3 +430,215 @@ or `\n`.
 
 ---
 
+## 7 Job Control <a name="job-control"></a>
+
+A job in `xd-shell` is a single command or a pipeline of commands that are executed together as a unit.  
+All processes belonging to the same job share a process group ID (PGID), allowing them to be started, stopped, resumed, or signaled together.
+
+`xd-shell` provides a job control system when running interactively in a terminal. 
+It allows the shell to run commands in the foreground or background, suspend and 
+resume running processes, and deliver terminal signals (such as `Ctrl+C` or 
+`Ctrl+Z`) to the appropriate group of processes.
+
+---
+
+### 7.1 Foreground and Background Jobs <a name="foreground-and-background-jobs"></a>
+
+When a job is executed in `xd-shell`, it normally runs in the foreground.
+Foreground jobs take control of the terminal, receive keyboard input, and the
+shell waits for them to finish before reading the next command.
+
+A job can also be started in the background by appending `&` to the end of the
+command line. Background jobs run without taking control of the terminal. The
+shell returns to the prompt immediately, allowing additional commands to be
+entered while the job continues executing in the background. Each background job
+is assigned a job ID, which allows it to be tracked and managed by the shell.
+
+---
+
+### 7.2 Job States <a name="job-states"></a>
+
+`xd-shell` tracks the state of each active job so it can report state changes and
+manage jobs correctly during execution. 
+
+A job may be in one of the following states:
+
+- Running – the job is still executing.
+- Stopped – the job has been suspended.
+- Done – the job finished normally with an exit status of 0.
+- Exited – the job finished with a non-zero exit status.
+- Signaled – the job ended because it received a terminating signal.
+
+These states allow the shell to provide meaningful job listings, resume stopped
+jobs, and clean up completed ones.
+
+---
+
+### 7.3 Terminal Control <a name="terminal-control"></a>
+
+When running interactively, `xd-shell` manages which process group controls the
+terminal.  
+Foreground jobs are given control of the terminal while running, allowing them to receive keyboard input and terminal-generated signals (`Ctrl+C`, `Ctrl+Z`, 
+etc.). 
+The shell regains control of the terminal whenever the foreground job stops or finishes. 
+
+---
+
+### 7.4 Signal Handling <a name="signal-handling"></a>
+
+`xd-shell` manages several signals to support interactive job control. When a job
+runs in the foreground, terminal-generated signals such as `Ctrl+C` (SIGINT) and
+`Ctrl+Z` (SIGTSTP) are delivered to that job. Background jobs do not receive
+these signals. The shell itself ignores signals that would otherwise terminate or
+stop it, ensuring that only the foreground job is affected. When a job stops or
+finishes, xd-shell detects this through SIGCHLD and updates its job table
+accordingly.
+
+---
+
+### 7.5 Job Specifiers <a name="job-specifiers"></a>
+
+`xd-shell` allows referring to jobs using job specifiers, which are short
+notations beginning with `%`. These are used by job-control builtins to identify 
+which job should be acted on.
+
+Supported job specifiers:
+
+- `%n` — job with ID `n`
+- `%+` or `%%` — the *current job*
+- `%-` — the *previous job*
+
+After each command completes or a job changes state, `xd-shell` refreshes the jobs
+table and updates the current and previous jobs. The *current job* is the most 
+recently active job, with stopped jobs taking priority over running ones. The
+*previous job* is simply the next most recently active job.
+
+---
+
+### 7.6 The `jobs` Builtin <a name="the-jobs-builtin"></a>
+
+The `jobs` builtin is used to display the status of all active jobs.
+
+**Usage:**
+
+```sh
+jobs [-lp]
+```
+
+**Options:**
+
+| Option   | Description                                      |
+|----------|--------------------------------------------------|
+| `-l`     | Show detailed status for each process in the job |
+| `-p`     | Show the process ID(s) associated with each job  |
+| `--help` | Show help information                            |
+
+**Behavior:**
+
+The `jobs` builtin does not accept any non-option arguments. It always prints the
+current job table, and the `-l` and `-p` options modify which additional
+information is included.
+
+**Exit status:**
+
+Returns `0` unless an invalid option is given or an error occurs.
+
+---
+
+### 7.7 The `fg` Builtin <a name="the-fg-builtin"></a>
+
+The `fg` builtin is used to move a job into the foreground, resuming it if it is 
+stopped.
+
+**Usage:**
+
+```sh
+fg [job_spec]
+```
+
+**Options:**
+
+| Option   | Description            |
+|----------|------------------------|
+| `--help` | Show help information  |
+
+
+**Behavior:**
+
+The `fg` builtin only works when job control is enabled in interactive shell mode. 
+It accepts at most one optional `job_spec` operand. If `job_spec`
+is omitted, the shell's *current job* (as described in [Job Specifiers](#job-specifiers)) is used. The specified job is brought into the foreground, if it 
+was stopped, it is resumed and run in the foreground while `xd-shell` waits for it 
+to finish or stop again.
+
+**Exit status:**
+
+Returns the exit status of the command placed in foreground unless an error occurs.
+
+---
+
+### 7.8 The `bg` Builtin <a name="the-bg-builtin"></a>
+
+The `bg` builtin is used to move one or more jobs to the background, resuming them 
+if they are stopped.
+
+**Usage:**
+
+```sh
+bg [job_spec ...]
+```
+
+**Options:**
+
+| Option   | Description           |
+|----------|-----------------------|
+| `--help` | Show help information |
+
+**Behavior:**
+
+The `bg` builtin only works when job control is enabled in interactive shell
+mode. It accepts zero or more `job_spec` operands. If no `job_spec` is given,
+the shell's *current job* (as described in [Job Specifiers](#job-specifiers)) is 
+used. Each specified job is moved to the background, if it was stopped, it is 
+resumed and continues running in the background as if it had been started with `&`.
+
+**Exit status:**
+
+Returns `0` unless job control is not enabled or an error occurs.
+
+---
+
+### 7.9 The `kill` Builtin <a name="the-kill-builtin"></a>
+
+The `kill` builtin is used to send a signal to one or more processes or jobs.
+
+**Usage:**
+
+```sh
+kill [-s sigspec | -n signum] pid | jobspec ...
+kill -l
+```
+
+**Options:**
+
+| Option   | Description                                           |
+|----------|-------------------------------------------------------|
+| `-s sig` | Use the signal named by `sig`                         |
+| `-n num` | Use the signal numbered `num`                         |
+| `-l`     | List the available signal names and their numbers     |
+| `--help` | Show help information                                 |
+
+**Behavior:**
+
+By default, `kill` sends the `SIGTERM` signal. When `-s` or `-n` is provided, the
+specified signal name or number determines which signal is sent. Each argument is
+either a process ID or a job specifier beginning with `%` (as described in
+[Job Specifiers](#job-specifiers)). When a job specifier is used, the signal is
+sent to the job's process group. With `-l`, `kill` prints the list of available
+signals and their numbers instead of sending a signal.
+
+**Exit status:**
+
+Returns `0` unless an invalid option is given or an error occurs.
+
+---
