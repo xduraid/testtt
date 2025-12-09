@@ -478,22 +478,25 @@ jobs, and clean up completed ones.
 ### 7.3 Terminal Control <a name="terminal-control"></a>
 
 When running interactively, `xd-shell` manages which process group controls the
-terminal.  
-Foreground jobs are given control of the terminal while running, allowing them to receive keyboard input and terminal-generated signals (`Ctrl+C`, `Ctrl+Z`, 
-etc.). 
-The shell regains control of the terminal whenever the foreground job stops or finishes. 
+terminal. Foreground jobs temporarily take control so they can perform input and
+output, and the shell regains control whenever the foreground job stops or
+finishes.
 
 ---
 
 ### 7.4 Signal Handling <a name="signal-handling"></a>
 
-`xd-shell` manages several signals to support interactive job control. When a job
-runs in the foreground, terminal-generated signals such as `Ctrl+C` (SIGINT) and
-`Ctrl+Z` (SIGTSTP) are delivered to that job. Background jobs do not receive
-these signals. The shell itself ignores signals that would otherwise terminate or
-stop it, ensuring that only the foreground job is affected. When a job stops or
-finishes, xd-shell detects this through SIGCHLD and updates its job table
-accordingly.
+In interactive mode, `xd-shell` installs custom signal handlers to support job
+control and to prevent the shell itself from being interrupted or suspended.
+The shell ignores several signals that are intended for foreground jobs,
+including *SIGINT* (`Ctrl+C`), *SIGQUIT* (`Ctrl+\`), *SIGTSTP* (`Ctrl+Z`),
+*SIGTTIN*, and *SIGTTOU*. This ensures that only the foreground job receives
+these signals.
+
+When a job runs in the foreground, its process group receives terminal-generated
+signals such as *SIGINT* and *SIGTSTP*. Background jobs do not receive these
+signals, if they attempt to read from or write to the terminal, they are stopped
+with *SIGTTIN* or *SIGTTOU*.
 
 ---
 
