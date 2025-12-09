@@ -27,6 +27,7 @@
     - [7.4 Signal Handling](#signal-handling)
     - [7.5 Job Specifiers](#job-specifiers)
     - [7.6 The `jobs` Builtin](#the-jobs-builtin)
+    - [7.7 The `fg` Builtin](#the-fg-builtin)
     - [7.8 The `bg` Builtin](#the-bg-builtin)
     - [7.9 The `kill` Builtin](#the-kill-builtin)
 
