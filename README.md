@@ -1,6 +1,6 @@
 - [7 Job Control](#job-control)
-    - [7.1 Job States](#job-states)
-    - [7.2 Foreground and Background Jobs](#foreground-and-background-jobs)
+    - [7.1 Foreground and Background Jobs](#foreground-and-background-jobs)
+    - [7.2 Job States](#job-states)
     - [7.3 Job Specifiers](#job-specifiers)
     - [7.4 The `jobs` Builtin](#the-jobs-builtin)
     - [7.5 The `fg` Builtin](#the-fg-builtin)
@@ -22,7 +22,34 @@ resume them as needed.
 
 ---
 
-### 7.1 Job States <a name="job-states"></a>
+### 7.1 Foreground and Background Jobs <a name="foreground-and-background-jobs"></a>
+
+
+In interactive mode, `xd-shell` manages terminal ownership by deciding which
+process group controls the terminal. At any moment, either the shell or the job
+running in the foreground holds the terminal, ensuring that input and
+terminal-generated signals are delivered correctly.
+
+A job normally runs in the foreground. The shell gives it control of the
+terminal and waits for it to finish or become stopped before reading the next
+command. Foreground jobs receive terminal-generated signals such as *SIGINT*
+(`Ctrl+C`) and *SIGTSTP* (`Ctrl+Z`).
+
+A job can also be started in the background by appending `&` to the command
+line. Background jobs do not take control of the terminal, the shell
+immediately returns to the prompt so other commands can be entered while the job
+continues running. Background jobs do not receive terminal-generated signals,
+and if they attempt to read from or write to the terminal, they are stopped by
+the operating system (*SIGTTIN* or *SIGTTOU*).
+
+> ℹ️ **Note:** In interactive mode, `xd-shell` ignores several signals that are 
+intended for foreground jobs rather than for the shell itself, including *SIGINT*,
+*SIGQUIT*, *SIGTSTP*, *SIGTTIN*, and *SIGTTOU*. This prevents the shell from
+being interrupted or suspended.
+
+---
+
+### 7.2 Job States <a name="job-states"></a>
 
 `xd-shell` tracks the state of each active job so it can report changes and
 manage jobs correctly during execution.
@@ -34,32 +61,6 @@ A job may be in one of the following states:
 - **Done** — the job finished with an exit status of 0.
 - **Exited** — the job finished with a non-zero exit status.
 - **Signaled** — the job was terminated by a signal.
-
----
-
-### 7.2 Foreground and Background Jobs <a name="foreground-and-background-jobs"></a>
-
-When a job is executed in `xd-shell`, it normally runs in the foreground.
-Foreground jobs take control of the terminal, receive keyboard input, and the
-shell waits for them to finish before reading the next command.
-
-A job can also be started in the background by appending `&` to the command
-line. Background jobs do not take control of the terminal, and the shell returns
-to the prompt immediately, allowing additional commands to be entered while the
-job continues running.
-
-When running interactively, `xd-shell` manages ownership of the terminal by
-assigning it to the process group of the job running in the foreground. Terminal
-control is returned to the shell whenever that job stops or completes. 
-Terminal-generated signals such as `Ctrl+C` (SIGINT) and `Ctrl+Z`
-(SIGTSTP) are delivered to the job that currently owns the terminal. Background
-jobs do not receive these signals, if they attempt to read from or write to the
-terminal, they are stopped with SIGTTIN or SIGTTOU.
-
-To support this behavior and avoid being interrupted or suspended itself, the
-shell ignores several signals in interactive mode, including SIGINT, SIGQUIT,
-SIGTSTP, SIGTTIN, and SIGTTOU. These signals are intended for the foreground
-job’s process group rather than for `xd-shell` itself.
 
 ---
 
