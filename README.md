@@ -1,212 +1,139 @@
-- [7 Job Control](#job-control)
-    - [7.1 Foreground and Background Jobs](#foreground-and-background-jobs)
-    - [7.2 Job States](#job-states)
-    - [7.3 Job Specifiers](#job-specifiers)
-    - [7.4 The `jobs` Builtin](#the-jobs-builtin)
-    - [7.5 The `fg` Builtin](#the-fg-builtin)
-    - [7.6 The `bg` Builtin](#the-bg-builtin)
-    - [7.7 The `kill` Builtin](#the-kill-builtin)
+- [3 Shell Language](#shell-language)
+    - [3.1 Commands](#commands)
+    - [3.2 Pipelines](#pipelines)
+    - [3.3 Comments](#comments)
+    - [3.4 Quoting and Escaping](#quoting-and-escaping)
+        - [3.4.1 Single Quotes](#single-quotes)
+        - [3.4.2 Double Quotes](#double-quotes)
+        - [3.4.3 Escape Sequences](#escape-sequences)
+        - [3.4.4 Line Continuation](#line-continuation)
+    - [3.5 Redirections](#redirections)
 
 ---
 
-## 7 Job Control <a name="job-control"></a>
+## 3 Shell Language <a name="shell-language"></a>
 
-A job in `xd-shell` is a single command or a pipeline of commands that are
-executed together as a unit. All processes belonging to the same job share a
-process group ID (PGID), and every active job is assigned a job ID that the
-shell uses to identify and manage it through job-control builtins.
-
-`xd-shell` provides a job control system when running interactively in a terminal,
-enabling users to run jobs in the foreground or background and to suspend or
-resume them as needed.
+`xd-shell` provides a command language supporting command pipelines,
+I/O redirections, background execution, and standard quoting and escaping rules.
 
 ---
 
-### 7.1 Foreground and Background Jobs <a name="foreground-and-background-jobs"></a>
+## 3.1 Commands <a name="commands"></a>
 
+A command in `xd-shell` consists of a command name (a builtin or external
+program), zero or more arguments, and optional I/O redirections  (see
+[Redirections](#redirections)).
 
-In interactive mode, `xd-shell` manages terminal ownership by deciding which
-process group controls the terminal. At any moment, either the shell or the job
-running in the foreground holds the terminal, ensuring that input and
-terminal-generated signals are delivered correctly.
+**General Form:**
 
-A job normally runs in the foreground. The shell gives it control of the
-terminal and waits for it to finish or become stopped before reading the next
-command. Foreground jobs receive terminal-generated signals such as *SIGINT*
-(`Ctrl+C`) and *SIGTSTP* (`Ctrl+Z`).
-
-A job can also be started in the background by appending `&` to the command
-line. Background jobs do not take control of the terminal, the shell
-immediately returns to the prompt so other commands can be entered while the job
-continues running. Background jobs do not receive terminal-generated signals,
-and if they attempt to read from or write to the terminal, they are stopped by
-the operating system (*SIGTTIN* or *SIGTTOU*).
-
-> ℹ️ **Note:** In interactive mode, `xd-shell` ignores several signals that are 
-intended for foreground jobs rather than for the shell itself, including *SIGINT*,
-*SIGQUIT*, *SIGTSTP*, *SIGTTIN*, and *SIGTTOU*. This prevents the shell from
-being interrupted or suspended.
-
----
-
-### 7.2 Job States <a name="job-states"></a>
-
-`xd-shell` tracks the state of each active job so it can report changes and
-manage jobs correctly during execution.
-
-A job may be in one of the following states:
-
-- **Running** — the job is currently executing.
-- **Stopped** — the job has been suspended.
-- **Done** — the job finished with an exit status of 0.
-- **Exited** — the job finished with a non-zero exit status.
-- **Signaled** — the job was terminated by a signal.
-
----
-
-### 7.3 Job Specifiers <a name="job-specifiers"></a>
-
-`xd-shell` allows referring to jobs using job specifiers, which are short
-notations beginning with `%`. These are used by job-control builtins to identify 
-which job should be acted on.
-
-Supported job specifiers:
-
-- `%n` — job with ID `n`
-- `%+` or `%%` — the *current job*
-- `%-` — the *previous job*
-
-After each command completes or a job changes state, `xd-shell` refreshes the jobs
-table and updates the current and previous jobs. The *current job* is the most 
-recently active job, with stopped jobs taking priority over running ones. The
-*previous job* is simply the next most recently active job.
-
----
-
-### 7.4 The `jobs` Builtin <a name="the-jobs-builtin"></a>
-
-The `jobs` builtin is used to display the status of all active jobs.
-
-**Usage:**
-
-```sh
-jobs [-lp]
+```text
+command [arg ...] [redirection ...]
 ```
 
-**Options:**
+---
 
-| Option   | Description                                      |
-|----------|--------------------------------------------------|
-| `-l`     | Show detailed status for each process in the job |
-| `-p`     | Show the process ID(s) associated with each job  |
-| `--help` | Show help information                            |
+### 3.2 Pipelines <a name="pipelines"></a>
 
-**Behavior:**
+A pipeline connects the standard output of one command to the standard input of
+the next command using the `|` operator.
 
-The `jobs` builtin does not accept any non-option arguments. It always prints the
-current job table, and the `-l` and `-p` options modify which additional
-information is included.
+**General Form:**
 
-**Exit status:**
+```text
+cmd [| cmd ...] [&] <newline>
+```
 
-Returns `0` unless an invalid option is given or an error occurs.
+**Rules and Behavior:**
+
+- A pipeline must be terminated by a newline (`\n`) or end-of-file (`EOF`).
+- A pipeline must appear entirely on one logical line unless extended using a
+  line continuation (`\`).
+- Each command in the pipeline runs in parallel as a separate process.
+- The exit status of the pipeline is the exit status of the last command.
+- The optional `&` may appear only after the final command to run the entire
+  pipeline in the background.
 
 ---
 
-### 7.5 The `fg` Builtin <a name="the-fg-builtin"></a>
+### 3.3 Comments <a name="comments"></a>
 
-The `fg` builtin is used to move a job into the foreground, resuming it if it is 
-stopped.
+A comment begins with the `#` character and continues to the end of the line.
+It is recognized only when the `#` appears outside of single quotes `'...'` or
+double quotes `"..."`.
 
-**Usage:**
-
-```sh
-fg [job_spec]
-```
-
-**Options:**
-
-| Option   | Description            |
-|----------|------------------------|
-| `--help` | Show help information  |
-
-
-**Behavior:**
-
-The `fg` builtin only works when job control is enabled in interactive shell mode. 
-It accepts at most one optional `job_spec` operand. If `job_spec`
-is omitted, the shell's *current job* (as described in [Job Specifiers](#job-specifiers)) is used. The specified job is brought into the foreground, if it 
-was stopped, it is resumed and run in the foreground while `xd-shell` waits for it 
-to finish or stop again.
-
-**Exit status:**
-
-Returns the exit status of the command placed in foreground unless an error occurs.
+Everything from the `#` character up to the next newline is ignored by the shell.
 
 ---
 
-### 7.6 The `bg` Builtin <a name="the-bg-builtin"></a>
+### 3.4 Quoting and Escaping <a name="quoting-and-escaping"></a>
 
-The `bg` builtin is used to move one or more jobs to the background, resuming them 
-if they are stopped.
-
-**Usage:**
-
-```sh
-bg [job_spec ...]
-```
-
-**Options:**
-
-| Option   | Description           |
-|----------|-----------------------|
-| `--help` | Show help information |
-
-**Behavior:**
-
-The `bg` builtin only works when job control is enabled in interactive shell
-mode. It accepts zero or more `job_spec` operands. If no `job_spec` is given,
-the shell's *current job* (as described in [Job Specifiers](#job-specifiers)) is 
-used. Each specified job is moved to the background, if it was stopped, it is 
-resumed and continues running in the background as if it had been started with `&`.
-
-**Exit status:**
-
-Returns `0` unless job control is not enabled or an error occurs.
+Quoting controls how characters are interpreted by the shell. `xd-shell`
+supports single quotes, double quotes, backslash escaping, and line continuation.
 
 ---
 
-### 7.7 The `kill` Builtin <a name="the-kill-builtin"></a>
+#### 3.4.1 Single Quotes <a name="single-quotes"></a>
 
-The `kill` builtin is used to send a signal to one or more processes or jobs.
+Enclosing characters in single quotes preserves the literal value of every
+character inside the quotes. A single quote may not appear inside a single-quoted
+string, even when preceded by a backslash.
 
-**Usage:**
+---
 
-```sh
-kill [-s sigspec | -n signum] pid | jobspec ...
-kill -l
-```
+#### 3.4.2 Double Quotes <a name="double-quotes"></a>
 
-**Options:**
+Enclosing characters in double quotes preserves the literal value of all
+characters except `$`, `"`, and `\`.
 
-| Option   | Description                                           |
-|----------|-------------------------------------------------------|
-| `-s sig` | Use the signal named by `sig`                         |
-| `-n num` | Use the signal numbered `num`                         |
-| `-l`     | List the available signal names and their numbers     |
-| `--help` | Show help information                                 |
+Inside double quotes, a backslash may be used to remove the special meaning of
+the characters `$`, `"`, `\`, or `\n`. When a backslash appears before one
+of these characters, the backslash is removed and the following character is
+preserved literally. A backslash preceding any other character inside double 
+quotes is left unchanged.
 
-**Behavior:**
+---
 
-By default, `kill` sends the `SIGTERM` signal. When `-s` or `-n` is provided, the
-specified signal name or number determines which signal is sent. Each argument is
-either a process ID or a job specifier beginning with `%` (as described in
-[Job Specifiers](#job-specifiers)). When a job specifier is used, the signal is
-sent to the job's process group. With `-l`, `kill` prints the list of available
-signals and their numbers instead of sending a signal.
+#### 3.4.3 Escape Sequences <a name="escape-sequences"></a>
 
-**Exit status:**
+Outside of quotes, a backslash (`\`) preserves the literal value of the character
+that follows it, removing any special meaning that character would otherwise
+have. If the character following the backslash has no special meaning, the backslash
+is simply removed and the character is used unchanged.
 
-Returns `0` unless an invalid option is given or an error occurs.
+---
+
+#### 3.4.4 Line Continuation <a name="line-continuation"></a>
+
+A backslash (`\`) immediately followed by `\n` is treated as a line continuation.
+Both characters are removed, allowing a command to span multiple physical lines.
+
+---
+
+### 3.5 Redirections <a name="redirections"></a>
+
+Redirections change the source of standard input (`stdin`) or the destination of
+standard output (`stdout`) and standard error (`stderr`).
+
+In `xd-shell`, redirections must appear **after all command arguments**. Any word
+following a redirection operator is treated as the redirection target and not as
+a normal argument.
+
+`xd-shell` supports the following redirections:
+
+| Redirection   | Description                                              |
+|---------------|----------------------------------------------------------|
+| `< file`      | Redirect `stdin` from `file`                             |
+| `> file`      | Redirect `stdout` to `file` (truncate)                   |
+| `>> file`     | Redirect `stdout` to `file` (append)                     |
+| `2> file`     | Redirect `stderr` to `file` (truncate)                   |
+| `2>> file`    | Redirect `stderr` to `file` (append)                     |
+| `>& file`     | Redirect both `stdout` and `stderr` to `file` (truncate) |
+| `>>& file`    | Redirect both `stdout` and `stderr` to `file` (append)   |
+
+Redirections are processed from left to right. When multiple redirections modify
+the same stream, the last one takes effect.
+
+> ℹ️ **Note:** Only filenames (or words that expand to filenames) may be used as
+redirection targets.
 
 ---
