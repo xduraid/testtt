@@ -115,7 +115,7 @@ possible completions. The completion rules themselves are described in the
 
 ---
 
-## 2.3 Command History <a name="command-history"></a>
+### 2.3 Command History <a name="command-history"></a>
 
 `xd-shell` maintains both in-memory and persistent command history. History is
 automatically loaded at startup, used during the session, and saved when the
@@ -123,7 +123,7 @@ shell exits.
 
 ---
 
-### 2.3.1 In-Memory History <a name="in-memory-history"></a>
+#### 2.3.1 In-Memory History <a name="in-memory-history"></a>
 
 During an interactive session, every executed command is appended to an internal
 history list. Consecutive identical commands are not duplicated, and commands
@@ -134,7 +134,7 @@ directly by history navigation and incremental search.
 
 ---
 
-### 2.3.2 Persistent History File <a name="persistent-history-file"></a>
+#### 2.3.2 Persistent History File <a name="persistent-history-file"></a>
 
 When the shell starts, it attempts to load command history from the file
 specified by `$HISTFILE`. If `$HISTFILE` is unset, `xd-shell` first sets it to
@@ -143,7 +143,7 @@ exits, the entire in-memory history list is written to the file indicated by
 `$HISTFILE`, unless the variable was unset during the session.
 
 ---
-### 2.3.3 The `history` Builtin <a name="the-history-builtin"></a>
+#### 2.3.3 The `history` Builtin <a name="the-history-builtin"></a>
 
 The `history` builtin is used to display and manipulate the shell's command
 history.
@@ -186,7 +186,7 @@ Returns `0` unless an invalid option is given or an error occurs.
 
 ---
 
-## 2.4 Tab Completion <a name="tab-completion"></a>
+### 2.4 Tab Completion <a name="tab-completion"></a>
 
 `xd-shell` provides context-aware tab completion for commands, paths, variables,
 and other shell words. When `Tab` is pressed, the shell examines the word at the
@@ -194,7 +194,7 @@ cursor and generates a list of possible completions.
 
 ---
 
-### 2.4.1 Completion Types <a name="completion-types"></a>
+#### 2.4.1 Completion Types <a name="completion-types"></a>
 
 `xd-shell` completes different kinds of words depending on context. The following
 types of completions are supported:
@@ -212,7 +212,7 @@ Directories are completed with a trailing `/` when appropriate.
 
 ---
 
-### 2.4.2 Completion Behavior <a name="completion-behavior"></a>
+#### 2.4.2 Completion Behavior <a name="completion-behavior"></a>
 
 When completion is requested, `xd-shell` determines the type of completion to
 perform based on the word at the cursor and its context. It then generates the
