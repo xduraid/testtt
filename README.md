@@ -1,139 +1,223 @@
-- [3 Shell Language](#shell-language)
-    - [3.1 Commands](#commands)
-    - [3.2 Pipelines](#pipelines)
-    - [3.3 Comments](#comments)
-    - [3.4 Quoting and Escaping](#quoting-and-escaping)
-        - [3.4.1 Single Quotes](#single-quotes)
-        - [3.4.2 Double Quotes](#double-quotes)
-        - [3.4.3 Escape Sequences](#escape-sequences)
-        - [3.4.4 Line Continuation](#line-continuation)
-    - [3.5 Redirections](#redirections)
+- [2 Interactive Shell Mode](#interactive-shell-mode)
+    - [2.1 Prompt Format](#input-prompt)
+    - [2.2 Readline Features](#readline-features)
+        - [2.2.1 Line Editing and Cursor Movement](#line-editing)
+        - [2.2.2 History Navigation](#history-navigation)
+        - [2.2.3 History Search](#history-search)
+        - [2.2.4 Tab Key](#tab-key)
+    - [2.3 Command History](#command-history)
+        - [2.3.1 In-Memory History](#in-memory-history)
+        - [2.3.2 Persistent History File](#persistent-history-file)
+        - [2.3.3 The `history` Builtin](#the-history-builtin)
+    - [2.4 Tab Completion](#tab-completion)
+        - [2.4.1 Completion Types](#completion-types)
+        - [2.4.2 Completion Behavior](#completion-behavior)
+---
+
+## 2 Interactive Shell Mode <a name="interactive-shell-mode"></a>
+
+`xd-shell` provides an interactive environment when both `stdin` and `stdout` are 
+connected to a terminal. Interactive mode enables a dynamic prompt, line editing, 
+command history, tab completion, and job control.
 
 ---
 
-## 3 Shell Language <a name="shell-language"></a>
+### 2.1 Input Prompt <a name="input-prompt"></a>
 
-`xd-shell` provides a command language supporting command pipelines,
-I/O redirections, background execution, and standard quoting and escaping rules.
+In interactive mode, `xd-shell` displays a dynamic, colorized prompt that includes
+the current user, host, and working directory. The prompt has the form
+`user@host:cwd$`, ending with `$` for normal users and `#` for root. The `$HOME`
+prefix in the working directory is collapsed to `~` when the directory is inside
+the user's home, and the working directory shown in the prompt is updated before
+each input line to match the actual current directory.
 
 ---
 
-## 3.1 Commands <a name="commands"></a>
+### 2.2 Readline Features <a name="readline-features"></a>
 
-A command in `xd-shell` consists of a command name (a builtin or external
-program), zero or more arguments, and optional I/O redirections  (see
-[Redirections](#redirections)).
+`xd-shell` uses [`xd-readline`](https://github.com/xduraid/xd-readline), a custom 
+line-editing library implemented specifically for this project.  
+It provides interactive features such as line editing, command history, and tab 
+completion.
 
-**General Form:**
+---
 
-```text
-command [arg ...] [redirection ...]
+#### 2.2.1 Line Editing and Cursor Movement <a name="line-editing"></a>
+
+`xd-shell` supports full editing of the input line at any cursor position. You can
+move the cursor by character or word, jump to the beginning or end of the line,
+and delete characters or words efficiently. 
+
+The following cursor-movement and editing actions are supported:
+
+| Key Combination          | Action                                                 |
+|--------------------------|--------------------------------------------------------|
+| `←` or `Ctrl+B`          | Move cursor one character to the left                  |
+| `→` or `Ctrl+F`          | Move cursor one character to the right                 |
+| `Ctrl+←` or `Alt+B`      | Move cursor one word to the left                       |
+| `Ctrl+→` or `Alt+F`      | Move cursor one word to the right                      |
+| `Home` or `Ctrl+A`       | Move cursor to the beginning of the line               |
+| `End` or `Ctrl+E`        | Move cursor to the end of the line                     |
+| `Backspace` or `Ctrl+H`  | Delete character before the cursor                     |
+| `Delete`                 | Delete character at the cursor                         |
+| `Ctrl+D`                 | Delete character at the cursor, or send `EOF` if empty |
+| `Alt+Backspace`          | Delete word before the cursor                          |
+| `Alt+D` or `Ctrl+Delete` | Delete word after the cursor                           |
+| `Ctrl+U`                 | Delete everything before the cursor                    |
+| `Ctrl+K`                 | Delete everything from the cursor to the end           |
+| `Ctrl+L`                 | Clear the screen                                       |
+| `Enter` or `Ctrl+J`      | Submit the current input line                          |
+
+---
+
+#### 2.2.2 History Navigation <a name="history-navigation"></a>
+
+`xd-shell` allows navigating command history using dedicated keyboard shortcuts.
+You can move backward and forward through previously executed commands, or jump
+directly to the oldest or most recent entries.
+
+The following history-navigation actions are supported:
+
+
+| Key Combination              | Action                                       |
+|------------------------------|----------------------------------------------|
+| `↑` or `Page Up`             | Move to the previous history entry           |
+| `↓` or `Page Down`           | Move to the next history entry               |
+| `Ctrl+↑` or `Ctrl+Page Up`   | Jump to the first (oldest) history entry     |
+| `Ctrl+↓` or `Ctrl+Page Down` | Jump to the last (most recent) history entry |
+
+---
+
+#### 2.2.3 History Search <a name="history-search"></a>
+
+`xd-shell` provides real-time, incremental searching through the command history.
+You can search backward or forward, and the matching history line updates as you
+type. The current match is highlighted and can be accepted, skipped, or canceled.
+
+The following history-search actions are supported:
+
+| Key Combination | Action                                                |
+|-----------------|-------------------------------------------------------|
+| `Ctrl+R`        | Start reverse search or jump to the previous match    |
+| `Ctrl+S`        | Start forward search or jump to the next match        |
+| `Ctrl+G`        | Cancel the search and restore the original input line |
+| `Esc Esc`       | Accept the current match and exit search mode         |
+
+---
+
+#### 2.2.4 Tab Key <a name="tab-key"></a>
+
+`xd-shell` integrates with `xd-readline` to support tab completions. At this
+level, the editor detects `Tab` presses and provides the interactive behavior
+around completion requests, including recognizing double-`Tab` and displaying
+possible completions. The completion rules themselves are described in the
+[Tab Completion](#tab-completion) section below.
+
+---
+
+## 2.3 Command History <a name="command-history"></a>
+
+`xd-shell` maintains both in-memory and persistent command history. History is
+automatically loaded at startup, used during the session, and saved when the
+shell exits.
+
+---
+
+### 2.3.1 In-Memory History <a name="in-memory-history"></a>
+
+During an interactive session, every executed command is appended to an internal
+history list. Consecutive identical commands are not duplicated, and commands
+that begin with leading whitespace are not added. The history list holds up to
+1000 entries, discarding the oldest ones when the limit is reached. Recalled
+history lines can be edited or re-executed, and the in-memory list is used
+directly by history navigation and incremental search.
+
+---
+
+### 2.3.2 Persistent History File <a name="persistent-history-file"></a>
+
+When the shell starts, it attempts to load command history from the file
+specified by `$HISTFILE`. If `$HISTFILE` is unset, `xd-shell` first sets it to
+`$HOME/.xdsh_history` and then attempts to load the history file. When the shell
+exits, the entire in-memory history list is written to the file indicated by
+`$HISTFILE`, unless the variable was unset during the session.
+
+---
+### 2.3.3 The `history` Builtin <a name="the-history-builtin"></a>
+
+The `history` builtin is used to display and manipulate the shell's command
+history.
+
+**Usage:**
+
+```sh
+history [-c]  
+history -a [file]  
+history -r [file]  
+history -w [file]  
+history --help
 ```
 
----
+**Options:**
 
-### 3.2 Pipelines <a name="pipelines"></a>
+| Option      | Description                                                         |
+|-------------|---------------------------------------------------------------------|
+| `-c`        | Clear the in-memory history list                                    |
+| `-a [file]` | Append history entries from this session to *file*                  |
+| `-r [file]` | Read *file* and append its contents to the in-memory history list   |
+| `-w [file]` | Write the entire in-memory history list to *file*, overwriting it   |
+| `--help`    | Show help information                                               |
 
-A pipeline connects the standard output of one command to the standard input of
-the next command using the `|` operator.
+If *file* is not given, `$HISTFILE` is used.
 
-**General Form:**
+**Behavior:**
 
-```text
-cmd [| cmd ...] [&] <newline>
-```
+The `history` builtin only works in interactive shell mode. With no options, it
+prints the current in-memory history list with line numbers. With `-c`, it
+clears the in-memory list. The `-a`, `-r`, and `-w` options append, read, or
+write history using the specified file (or `$HISTFILE` if no file is given). If
+`-c` is combined with one of these options, the history list is cleared before
+the file operation is performed. When multiple of `-a`, `-r`, or `-w` are given,
+the last one takes effect.
 
-**Rules and Behavior:**
+**Exit status:**
 
-- A pipeline must be terminated by a newline (`\n`) or end-of-file (`EOF`).
-- A pipeline must appear entirely on one logical line unless extended using a
-  line continuation (`\`).
-- Each command in the pipeline runs in parallel as a separate process.
-- The exit status of the pipeline is the exit status of the last command.
-- The optional `&` may appear only after the final command to run the entire
-  pipeline in the background.
-
----
-
-### 3.3 Comments <a name="comments"></a>
-
-A comment begins with the `#` character and continues to the end of the line.
-It is recognized only when the `#` appears outside of single quotes `'...'` or
-double quotes `"..."`.
-
-Everything from the `#` character up to the next newline is ignored by the shell.
+Returns `0` unless an invalid option is given or an error occurs.
 
 ---
 
-### 3.4 Quoting and Escaping <a name="quoting-and-escaping"></a>
+## 2.4 Tab Completion <a name="tab-completion"></a>
 
-Quoting controls how characters are interpreted by the shell. `xd-shell`
-supports single quotes, double quotes, backslash escaping, and line continuation.
-
----
-
-#### 3.4.1 Single Quotes <a name="single-quotes"></a>
-
-Enclosing characters in single quotes preserves the literal value of every
-character inside the quotes. A single quote may not appear inside a single-quoted
-string, even when preceded by a backslash.
+`xd-shell` provides context-aware tab completion for commands, paths, variables,
+and other shell words. When `Tab` is pressed, the shell examines the word at the
+cursor and generates a list of possible completions.
 
 ---
 
-#### 3.4.2 Double Quotes <a name="double-quotes"></a>
+### 2.4.1 Completion Types <a name="completion-types"></a>
 
-Enclosing characters in double quotes preserves the literal value of all
-characters except `$`, `"`, and `\`.
+`xd-shell` completes different kinds of words depending on context. The following
+types of completions are supported:
 
-Inside double quotes, a backslash may be used to remove the special meaning of
-the characters `$`, `"`, `\`, or `\n`. When a backslash appears before one
-of these characters, the backslash is removed and the following character is
-preserved literally. A backslash preceding any other character inside double 
-quotes is left unchanged.
+| Type                    | Description                                                           |
+| ----------------------- | --------------------------------------------------------------------- |
+| **Executables**         | Commands found in directories listed in `$PATH`.                      |
+| **Builtins**            | Shell builtins such as `cd`, `alias`, `history`, etc.                 |
+| **Aliases**             | Alias names defined using the `alias` builtin.                        |
+| **Variables**           | Shell and environment variable names.                                 |
+| **Files & Directories** | Pathnames relative to the current directory or a typed prefix.        |
+| **`~` / `~user`**       | Home directory expansions for the current user or other system users. |
 
----
-
-#### 3.4.3 Escape Sequences <a name="escape-sequences"></a>
-
-Outside of quotes, a backslash (`\`) preserves the literal value of the character
-that follows it, removing any special meaning that character would otherwise
-have. If the character following the backslash has no special meaning, the backslash
-is simply removed and the character is used unchanged.
+Directories are completed with a trailing `/` when appropriate.
 
 ---
 
-#### 3.4.4 Line Continuation <a name="line-continuation"></a>
+### 2.4.2 Completion Behavior <a name="completion-behavior"></a>
 
-A backslash (`\`) immediately followed by `\n` is treated as a line continuation.
-Both characters are removed, allowing a command to span multiple physical lines.
-
----
-
-### 3.5 Redirections <a name="redirections"></a>
-
-Redirections change the source of standard input (`stdin`) or the destination of
-standard output (`stdout`) and standard error (`stderr`).
-
-In `xd-shell`, redirections must appear **after all command arguments**. Any word
-following a redirection operator is treated as the redirection target and not as
-a normal argument.
-
-`xd-shell` supports the following redirections:
-
-| Redirection   | Description                                              |
-|---------------|----------------------------------------------------------|
-| `< file`      | Redirect `stdin` from `file`                             |
-| `> file`      | Redirect `stdout` to `file` (truncate)                   |
-| `>> file`     | Redirect `stdout` to `file` (append)                     |
-| `2> file`     | Redirect `stderr` to `file` (truncate)                   |
-| `2>> file`    | Redirect `stderr` to `file` (append)                     |
-| `>& file`     | Redirect both `stdout` and `stderr` to `file` (truncate) |
-| `>>& file`    | Redirect both `stdout` and `stderr` to `file` (append)   |
-
-Redirections are processed from left to right. When multiple redirections modify
-the same stream, the last one takes effect.
-
-> ℹ️ **Note:** Only filenames (or words that expand to filenames) may be used as
-redirection targets.
+When completion is requested, `xd-shell` determines the type of completion to
+perform based on the word at the cursor and its context. It then generates the
+set of possible completions. The context determines what is completed, such as
+commands at the beginning of a line, pathnames after most commands, variable
+names after `$` or `${`, or user home names after `~`.
 
 ---
