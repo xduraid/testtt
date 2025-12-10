@@ -12,7 +12,7 @@
     - [2.4 Tab Completion](#tab-completion)
         - [2.4.1 Completion Types](#completion-types)
         - [2.4.2 Completion Behavior](#completion-behavior)
----
+--
 
 ## 2 Interactive Shell Mode <a name="interactive-shell-mode"></a>
 
